@@ -18,10 +18,15 @@ package org.apache.ibatis.cache.decorators;
 import org.apache.ibatis.cache.Cache;
 
 /**
+ * 线程同步
+ * 设计模式:
+ * 1. 装饰器
+ * 2. 责任链: 利用装饰器, 实现责任链, 自己只干自己的事情
  * @author Clinton Begin
  */
 public class SynchronizedCache implements Cache {
 
+  // 装饰器的体现
   private final Cache delegate;
 
   public SynchronizedCache(Cache delegate) {

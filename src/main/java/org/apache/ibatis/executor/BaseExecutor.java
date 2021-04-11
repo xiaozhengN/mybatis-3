@@ -113,6 +113,7 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    // 更新操作前, 清空一级缓存
     clearLocalCache();
     return doUpdate(ms, parameter);
   }
@@ -143,12 +144,13 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
-    if (queryStack == 0 && ms.isFlushCacheRequired()) {
+    if (queryStack == 0 && ms.isFlushCacheRequired()) {// 查询前配置了 FlushCache, 子查询时不会清除
       clearLocalCache();
     }
     List<E> list;
     try {
       queryStack++;
+      // 从缓存中取值
       list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
       if (list != null) {
         handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
@@ -158,13 +160,13 @@ public abstract class BaseExecutor implements Executor {
     } finally {
       queryStack--;
     }
-    if (queryStack == 0) {
+    if (queryStack == 0) {// 子查询依赖了一级缓存, 所以不能清空
       for (DeferredLoad deferredLoad : deferredLoads) {
         deferredLoad.load();
       }
       // issue #601
       deferredLoads.clear();
-      if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {
+      if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {// 配置中缩小了缓存的作用域, 也会清空缓存
         // issue #482
         clearLocalCache();
       }
@@ -191,16 +193,24 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
+  /**
+   * 封装缓存 key
+   * @param ms
+   * @param parameterObject
+   * @param rowBounds
+   * @param boundSql
+   * @return
+   */
   @Override
   public CacheKey createCacheKey(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql) {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
     CacheKey cacheKey = new CacheKey();
-    cacheKey.update(ms.getId());
-    cacheKey.update(rowBounds.getOffset());
-    cacheKey.update(rowBounds.getLimit());
-    cacheKey.update(boundSql.getSql());
+    cacheKey.update(ms.getId());// statmentId
+    cacheKey.update(rowBounds.getOffset());// 分页条件偏移量
+    cacheKey.update(rowBounds.getLimit());// 最大值
+    cacheKey.update(boundSql.getSql());// 查询条件
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
     TypeHandlerRegistry typeHandlerRegistry = ms.getConfiguration().getTypeHandlerRegistry();
     // mimic DefaultParameterHandler logic
@@ -218,12 +228,12 @@ public abstract class BaseExecutor implements Executor {
           MetaObject metaObject = configuration.newMetaObject(parameterObject);
           value = metaObject.getValue(propertyName);
         }
-        cacheKey.update(value);
+        cacheKey.update(value);// 参数
       }
     }
     if (configuration.getEnvironment() != null) {
       // issue #176
-      cacheKey.update(configuration.getEnvironment().getId());
+      cacheKey.update(configuration.getEnvironment().getId());// 环境变量
     }
     return cacheKey;
   }
@@ -238,7 +248,7 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Cannot commit, transaction is already closed");
     }
-    clearLocalCache();
+    clearLocalCache();// commit 时清空一级缓存
     flushStatements();
     if (required) {
       transaction.commit();
@@ -249,7 +259,7 @@ public abstract class BaseExecutor implements Executor {
   public void rollback(boolean required) throws SQLException {
     if (!closed) {
       try {
-        clearLocalCache();
+        clearLocalCache();// 回滚时清空一级缓存
         flushStatements(true);
       } finally {
         if (required) {
@@ -320,12 +330,14 @@ public abstract class BaseExecutor implements Executor {
 
   private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
     List<E> list;
+    // 执行占位符, 用于解决子查询当中的循环依赖
     localCache.putObject(key, EXECUTION_PLACEHOLDER);
     try {
       list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
     } finally {
       localCache.removeObject(key);
     }
+    // 填充缓存
     localCache.putObject(key, list);
     if (ms.getStatementType() == StatementType.CALLABLE) {
       localOutputParameterCache.putObject(key, parameter);

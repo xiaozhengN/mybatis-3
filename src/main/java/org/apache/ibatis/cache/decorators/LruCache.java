@@ -21,8 +21,8 @@ import java.util.Map;
 import org.apache.ibatis.cache.Cache;
 
 /**
+ * 防溢出
  * Lru (least recently used) cache decorator.
- *
  * @author Clinton Begin
  */
 public class LruCache implements Cache {

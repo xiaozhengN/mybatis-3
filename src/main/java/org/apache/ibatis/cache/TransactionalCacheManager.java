@@ -26,6 +26,12 @@ import org.apache.ibatis.util.MapUtil;
  */
 public class TransactionalCacheManager {
 
+
+  /**
+   * Cache: 缓存区 key
+   * TransactionalCache: 暂存区 value
+   * 管理着很多个暂存区, 使用过多少缓存, 就会有多少个暂存区
+   */
   private final Map<Cache, TransactionalCache> transactionalCaches = new HashMap<>();
 
   public void clear(Cache cache) {
@@ -36,6 +42,12 @@ public class TransactionalCacheManager {
     return getTransactionalCache(cache).getObject(key);
   }
 
+  /**
+   * 填充结果到暂存区
+   * @param cache
+   * @param key
+   * @param value
+   */
   public void putObject(Cache cache, CacheKey key, Object value) {
     getTransactionalCache(cache).putObject(key, value);
   }

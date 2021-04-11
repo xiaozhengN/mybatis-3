@@ -66,10 +66,10 @@ public class TransactionalCache implements Cache {
     // issue #116
     Object object = delegate.getObject(key);
     if (object == null) {
-      entriesMissedInCache.add(key);
+      entriesMissedInCache.add(key);// 如何没有值设置一个值, 防止缓存穿透
     }
     // issue #146
-    if (clearOnCommit) {
+    if (clearOnCommit) {// 清空标记
       return null;
     } else {
       return object;

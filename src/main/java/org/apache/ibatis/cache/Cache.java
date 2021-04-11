@@ -36,6 +36,15 @@ import java.util.concurrent.locks.ReadWriteLock;
  * }
  * </pre>
  *
+ * 一个缓存的设计常常需要包含的东西:
+ * 1. 存储
+ * 2. 淘汰策略
+ * 3. 过期清理
+ * 4. 线程安全
+ * 5. 命中率统计
+ * 6. 序列化
+ * ...
+ *
  * @author Clinton Begin
  */
 
