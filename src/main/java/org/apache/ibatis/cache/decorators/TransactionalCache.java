@@ -112,8 +112,8 @@ public class TransactionalCache implements Cache {
   }
 
   private void flushPendingEntries() {
-    for (Map.Entry<Object, Object> entry : entriesToAddOnCommit.entrySet()) {
-      delegate.putObject(entry.getKey(), entry.getValue());
+    for (Map.Entry<Object, Object> entry : entriesToAddOnCommit.entrySet()) { // 遍历暂存区
+      delegate.putObject(entry.getKey(), entry.getValue()); // put到二级缓存
     }
     for (Object entry : entriesMissedInCache) {
       if (!entriesToAddOnCommit.containsKey(entry)) {

@@ -72,7 +72,7 @@ public class CachingExecutor implements Executor {
 
   @Override
   public int update(MappedStatement ms, Object parameterObject) throws SQLException {
-    flushCacheIfRequired(ms);
+    flushCacheIfRequired(ms); // 清空缓存是否是必须的, 是可以配置的
     return delegate.update(ms, parameterObject);
   }
 
@@ -164,7 +164,7 @@ public class CachingExecutor implements Executor {
   private void flushCacheIfRequired(MappedStatement ms) {
     Cache cache = ms.getCache();
     if (cache != null && ms.isFlushCacheRequired()) {
-      tcm.clear(cache);
+      tcm.clear(cache); // 清空暂存区
     }
   }
 
