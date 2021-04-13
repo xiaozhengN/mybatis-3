@@ -86,8 +86,8 @@ public abstract class BaseStatementHandler implements StatementHandler {
     Statement statement = null;
     try {
       statement = instantiateStatement(connection);
-      setStatementTimeout(statement, transactionTimeout);
-      setFetchSize(statement);
+      setStatementTimeout(statement, transactionTimeout); // 设置共性: Statement超时时间
+      setFetchSize(statement); // 设置返回行数
       return statement;
     } catch (SQLException e) {
       closeStatement(statement);
@@ -98,6 +98,12 @@ public abstract class BaseStatementHandler implements StatementHandler {
     }
   }
 
+  /**
+   * 模板方法设计模式, 父类定义一个抽象方法, 具体逻辑子类实现
+   * @param connection
+   * @return
+   * @throws SQLException
+   */
   protected abstract Statement instantiateStatement(Connection connection) throws SQLException;
 
   protected void setStatementTimeout(Statement stmt, Integer transactionTimeout) throws SQLException {

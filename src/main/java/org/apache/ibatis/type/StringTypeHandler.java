@@ -28,7 +28,7 @@ public class StringTypeHandler extends BaseTypeHandler<String> {
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, String parameter, JdbcType jdbcType)
       throws SQLException {
-    ps.setString(i, parameter);
+    ps.setString(i, parameter); // ps 设置字符串类型
   }
 
   @Override
