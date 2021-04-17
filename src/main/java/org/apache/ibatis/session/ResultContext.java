@@ -16,12 +16,15 @@
 package org.apache.ibatis.session;
 
 /**
+ * 控制结果的获取
  * @author Clinton Begin
  */
 public interface ResultContext<T> {
 
+  // 当前这一行的对象
   T getResultObject();
 
+  // 当前总共的数量
   int getResultCount();
 
   boolean isStopped();

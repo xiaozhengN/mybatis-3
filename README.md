@@ -26,3 +26,6 @@ MyNote
 
 instantiate: 实例化
 instantiateStatement: 实例化xxx对象
+
+org.apache.ibatis.executor.resultset.DefaultResultSetHandler.shouldProcessMoreRows
+![](./images/01-起的名字觉得很舒服.png)
